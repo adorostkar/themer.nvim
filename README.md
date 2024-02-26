@@ -9,7 +9,7 @@ The selected colorscheme is persisted and loaded with the plugin
 
 There is only one command
 
-`ThemerSelect` which shows the list of themes with Telescope
+`Themer` which shows the list of themes with Telescope
 
 ## Installation
 

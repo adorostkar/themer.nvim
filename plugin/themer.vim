@@ -1,2 +1,2 @@
 
-command! -nargs=0 ThemerSelect lua require("themer").select()
+command! -nargs=0 Themer lua require("themer").select()
