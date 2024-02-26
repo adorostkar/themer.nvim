@@ -1,31 +1,16 @@
 local M = {}
 
-local function getOpts()
+local function getDefaultOptions()
     local themes = require("telescope.themes")
     return {
         preview = true,
         filter_list = {},
+        initial_theme = nil,
         telescope = themes.get_dropdown(),
     }
 end
 
 local filename = vim.fn.stdpath('cache') .. '/themer.lua'
-local function setColorScheme()
-    local chunk, _ = loadfile(filename)
-    if chunk then
-        local N = chunk()
-        N.setColor()
-    end
-end
-
-function M.setup(opts)
-    M.opts = vim.tbl_extend('force', getOpts(), opts)
-    if vim.fn.filereadable(filename) then
-        vim.notify('Themer: Found file' .. filename, vim.log.levels.DEBUG)
-        setColorScheme()
-    end
-end
-
 local function write_to_file(colorscheme)
     local file = io.open(filename, 'w')
     io.output(file)
@@ -49,6 +34,26 @@ local function subtract(A, B)
         end
     end
     return res
+end
+
+
+local function setColorScheme()
+    local chunk, _ = loadfile(filename)
+    if chunk then
+        local N = chunk()
+        N.setColor()
+    end
+end
+
+function M.setup(opts)
+    M.opts = vim.tbl_extend('force', getDefaultOptions(), opts)
+    if vim.fn.filereadable(filename) ~= 0 then
+        print('Themer: Found file' .. filename)
+    elseif M.opts.initial_theme ~= nil then
+        print('here')
+        write_to_file(M.opts.initial_theme)
+    end
+    setColorScheme()
 end
 
 function M.select()

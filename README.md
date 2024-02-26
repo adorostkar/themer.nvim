@@ -26,9 +26,15 @@ There is only one command
 ## Options
 
     opts = {
-        preview = true, -- preview colorscheme when moving up and down in telescope
-        filter_list = {}, -- What color schemes not to show in the list
+        preview = true,
+        filter_list = {},
+        initial_theme = nil,
         telescope = {
             -- options that goes into telescope
         }
     }
+
+- **preview** Apply selected colorscheme temporarily when moving up and down in telescope
+- **filter_list** is a list of colorschemes to not show in the finder
+- **initial_theme** should be the theme you want applied the first time the plugin is run.
+    This will not have any effect once the colorscheme is selected from telescope
