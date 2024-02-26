@@ -38,7 +38,7 @@ local function write_to_file(colorscheme)
 end
 
 function M.select()
-    local show_telescope = function(opts)
+    local show_telescope = function()
         local pickers = require("telescope.pickers")
         local finders = require("telescope.finders")
         local actions = require("telescope.actions")
@@ -46,7 +46,7 @@ function M.select()
         local conf = require("telescope.config").values
         local colors = vim.fn.getcompletion('', 'color')
 
-        pickers.new(opts, {
+        pickers.new(M.opts.telescope, {
             prompt_title = "Colorschemes",
             finder = finders.new_table {
                 results = colors,
@@ -92,7 +92,7 @@ function M.select()
     end
 
     -- to execute the function
-    show_telescope(M.opts.telescope)
+    show_telescope()
 end
 
 return M
