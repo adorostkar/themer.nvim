@@ -5,6 +5,12 @@ The colorscheme is shown in telescope and live preview is given when changing co
 
 The selected colorscheme is persisted and loaded with the plugin
 
+## Command
+
+There is only one command
+
+`ThemerSelect` which shows the list of themes with Telescope
+
 ## Installation
 
 **Lazy**:
