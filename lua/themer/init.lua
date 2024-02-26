@@ -27,7 +27,6 @@ function M.setup(opts)
 end
 
 local function write_to_file(colorscheme)
-    -- vim.notify("vim.fn.execute('colorscheme " .. colorscheme .. "')")
     local file = io.open(filename, 'w')
     io.output(file)
     io.write('local M = {}\n')
@@ -63,7 +62,7 @@ function M.select()
         colors = subtract(colors, M.opts.filter_list)
 
         pickers.new(opts, {
-            prompt_title = "Colorschemes",
+            prompt_title = "Colorschemes, current: " .. vim.g.colors_name,
             finder = finders.new_table {
                 results = colors,
             },
