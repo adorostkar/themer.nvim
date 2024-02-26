@@ -18,8 +18,28 @@ There is only one command
     {
         'adorostkar/themer.nvim',
         opts = {},
+        priority = 1000,
+        lazy = false,
         dependencies = {
             'nvim-telescope/telescope.nvim',
+            -- optional, add colorthemes here
+        }
+    }
+
+## Example
+
+Lazy:
+
+    {
+        'adorostkar/themer.nvim',
+        opts = { initial_theme = 'tokyonight-night' },
+        priority = 1000,
+        lazy = false,
+        dependencies = {
+            'nvim-telescope/telescope.nvim',
+            "folke/tokyonight.nvim",
+            "navarasu/onedark.nvim",
+            "catppuccin/nvim",
         }
     }
 
