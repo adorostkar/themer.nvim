@@ -4,6 +4,7 @@ local function getOpts()
     local themes = require("telescope.themes")
     return {
         preview = true,
+        filter_list = {},
         telescope = themes.get_dropdown(),
     }
 end
@@ -37,6 +38,20 @@ local function write_to_file(colorscheme)
     io.close(file)
 end
 
+local function subtract(A, B)
+    local hash = {}
+    for _, v in ipairs(B) do
+        hash[v] = true
+    end
+    local res = {}
+    for _, v in ipairs(A) do
+        if not hash[v] then
+            table.insert(res, v)
+        end
+    end
+    return res
+end
+
 function M.select()
     local show_telescope = function(opts)
         local pickers = require("telescope.pickers")
@@ -45,6 +60,7 @@ function M.select()
         local action_state = require("telescope.actions.state")
         local conf = require("telescope.config").values
         local colors = vim.fn.getcompletion('', 'color')
+        colors = subtract(colors, M.opts.filter_list)
 
         pickers.new(opts, {
             prompt_title = "Colorschemes",

@@ -20,7 +20,8 @@ The selected colorscheme is persisted and loaded with the plugin
 ## Options
 
     opts = {
-        preview = true,
+        preview = true, -- preview colorscheme when moving up and down in telescope
+        filter_list = {}, -- What color schemes not to show in the list
         telescope = {
             -- options that goes into telescope
         }
