@@ -16,13 +16,17 @@ end
 -- Persist the current colorscheme into a lua file
 local function writeColorScheme(colorscheme)
     local file = io.open(filename, 'w')
-    io.output(file)
-    io.write('local M = {}\n')
-    io.write('function M.setColor()\n')
-    io.write("vim.fn.execute('colorscheme " .. colorscheme .. "')\n")
-    io.write('end\n')
-    io.write('return M\n')
-    io.close(file)
+    if file then
+        file:write('local M = {}\n')
+        file:write('function M.setColor()\n')
+        file:write("vim.fn.execute('colorscheme " .. colorscheme .. "')\n")
+        file:write('end\n')
+        file:write('return M\n')
+        file:close() -- Properly close the file using the file handle
+    else
+        -- Handle the error situation, e.g., file couldn't be opened for writing
+        print("Error: Unable to open file for writing.")
+    end
 end
 
 -- Substract list one from list two
