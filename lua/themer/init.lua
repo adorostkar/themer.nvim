@@ -1,5 +1,8 @@
 local M = {}
 
+local filename = vim.fn.stdpath('cache') .. '/themer.lua'
+
+-- Default options
 local function getDefaultOptions()
     local themes = require("telescope.themes")
     return {
@@ -10,8 +13,8 @@ local function getDefaultOptions()
     }
 end
 
-local filename = vim.fn.stdpath('cache') .. '/themer.lua'
-local function write_to_file(colorscheme)
+-- Persist the current colorscheme into a lua file
+local function writeColorScheme(colorscheme)
     local file = io.open(filename, 'w')
     io.output(file)
     io.write('local M = {}\n')
@@ -22,6 +25,7 @@ local function write_to_file(colorscheme)
     io.close(file)
 end
 
+-- Substract list one from list two
 local function subtract(A, B)
     local hash = {}
     for _, v in ipairs(B) do
@@ -37,12 +41,33 @@ local function subtract(A, B)
 end
 
 
-local function setColorScheme()
+-- Set colorscheme of nvim
+local function loadColorScheme()
     local chunk, _ = loadfile(filename)
     if chunk then
         local N = chunk()
         N.setColor()
     end
+end
+
+local function isInList(value, list)
+    for i, v in ipairs(list) do
+        if v == value then
+            return i
+        end
+    end
+    return -1
+end
+
+-- Return filtered colorscheme
+function M.getFilteredColorList()
+        local colors = vim.fn.getcompletion('', 'color')
+        local index = isInList(vim.g.colors_name, colors)
+        if index ~= -1 then
+            table.remove(colors, index)
+            table.insert(colors, 1, vim.g.colors_name)
+        end
+        return subtract(colors, M.opts.filter_list)
 end
 
 function M.setup(opts)
@@ -51,9 +76,16 @@ function M.setup(opts)
         print('Themer: Found file' .. filename)
     elseif M.opts.initial_theme ~= nil then
         print('here')
-        write_to_file(M.opts.initial_theme)
+        writeColorScheme(M.opts.initial_theme)
     end
-    setColorScheme()
+    M.opts.filter_list = M.opts.filter_list or {}
+    local ccsIndex = isInList(vim.g.colors_name, M.opts.filter_list)
+    if  ccsIndex > 0 then
+        vim.notify("Themer: Current colorscheme is in filter list. Ignoring", vim.log.levels.WARN)
+        table.remove(M.opts.filter_list, ccsIndex)
+    end
+
+    loadColorScheme()
 end
 
 function M.select()
@@ -63,13 +95,11 @@ function M.select()
         local actions = require("telescope.actions")
         local action_state = require("telescope.actions.state")
         local conf = require("telescope.config").values
-        local colors = vim.fn.getcompletion('', 'color')
-        colors = subtract(colors, M.opts.filter_list)
 
         pickers.new(opts, {
-            prompt_title = "Colorschemes, current: " .. vim.g.colors_name,
+            prompt_title = "Colorschemes",
             finder = finders.new_table {
-                results = colors,
+                results = M.getFilteredColorList(),
             },
             sorter = conf.generic_sorter(opts),
             attach_mappings = function(prompt_bufnr, _)
@@ -77,7 +107,7 @@ function M.select()
                     function() -- default action is yank
                         actions.close(prompt_bufnr)
                         local selection = action_state.get_selected_entry()
-                        write_to_file(selection.value)
+                        writeColorScheme(selection.value)
                         vim.fn.execute('colorscheme ' .. selection.value)
                     end
                 )
@@ -102,7 +132,7 @@ function M.select()
                 })
                 actions.close:enhance({
                     post = function()
-                        setColorScheme()
+                        loadColorScheme()
                     end,
                 })
 
