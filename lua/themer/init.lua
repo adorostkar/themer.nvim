@@ -75,21 +75,27 @@ function M.getFilteredColorList()
 end
 
 function M.setup(opts)
+    -- Setup options
     M.opts = vim.tbl_extend('force', getDefaultOptions(), opts)
+
+    -- If a theme is already set load it
     if vim.fn.filereadable(filename) ~= 0 then
         print('Themer: Found file' .. filename)
-    elseif M.opts.initial_theme ~= nil then
-        print('here')
-        writeColorScheme(M.opts.initial_theme)
+    -- If no persisted theme is found then write either the initial_theme
+    -- if exists or the current theme
+    else
+        local theme = M.opts.initial_theme or vim.g.colors_name
+        writeColorScheme(theme)
     end
+    loadColorScheme()
+
+    -- If the filter list includes current theme, then remove it from filter_list
     M.opts.filter_list = M.opts.filter_list or {}
     local ccsIndex = isInList(vim.g.colors_name, M.opts.filter_list)
     if  ccsIndex > 0 then
         vim.notify("Themer: Current colorscheme is in filter list. Ignoring", vim.log.levels.WARN)
         table.remove(M.opts.filter_list, ccsIndex)
     end
-
-    loadColorScheme()
 end
 
 function M.select()
