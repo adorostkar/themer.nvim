@@ -6,7 +6,7 @@ local filename = vim.fn.stdpath('cache') .. '/themer.lua'
 local function getDefaultOptions()
     local themes = require("telescope.themes")
     return {
-        preview = true,
+        preview = false,
         filter_list = {},
         initial_theme = nil,
         telescope = themes.get_dropdown(),
@@ -98,6 +98,17 @@ function M.setup(opts)
     end
 end
 
+local function _preview_color()
+    if not M.opts.preview then
+        loadColorScheme()
+        return
+    end
+
+    local action_state = require("telescope.actions.state")
+    local selection = action_state.get_selected_entry()
+    vim.fn.execute('colorscheme ' .. selection.value)
+end
+
 function M.select()
     local show_telescope = function(opts)
         local pickers = require("telescope.pickers")
@@ -112,32 +123,31 @@ function M.select()
                 results = M.getFilteredColorList(),
             },
             sorter = conf.generic_sorter(opts),
-            attach_mappings = function(prompt_bufnr, _)
+            attach_mappings = function(prompt_bufnr, map)
                 actions.select_default:replace(
                     function() -- default action is yank
                         actions.close(prompt_bufnr)
                         local selection = action_state.get_selected_entry()
                         writeColorScheme(selection.value)
-                        vim.fn.execute('colorscheme ' .. selection.value)
+                        _preview_color()
                     end
                 )
+                 map("i", "<C-t>", function(_)
+                    M.opts.preview = not M.opts.preview
+                    vim.notify("Changed preview to " .. tostring(M.opts.preview), vim.log.levels.DEBUG)
+                    _preview_color()
+                end)
 
                 -- Only set the rest of actions if preview is true.
                 -- These actions are only relevant if the preview is true
-                if not M.opts.preview then
-                    return true
-                end
-
                 actions.move_selection_next:enhance({
                     post = function()
-                        local selection = action_state.get_selected_entry(prompt_bufnr)
-                        vim.fn.execute('colorscheme ' .. selection.value)
+                        _preview_color()
                     end,
                 })
                 actions.move_selection_previous:enhance({
                     post = function()
-                        local selection = action_state.get_selected_entry(prompt_bufnr)
-                        vim.fn.execute('colorscheme ' .. selection.value)
+                        _preview_color()
                     end,
                 })
                 actions.close:enhance({

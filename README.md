@@ -46,7 +46,7 @@ Lazy:
 ## Options
 
     opts = {
-        preview = true,
+        preview = false,
         filter_list = {},
         initial_theme = nil,
         telescope = {
@@ -58,3 +58,6 @@ Lazy:
 - **filter_list** is a list of colorschemes to not show in the finder
 - **initial_theme** should be the theme you want applied the first time the plugin is run.
     This will not have any effect once the colorscheme is selected from telescope
+
+## Key binding
+<C-t> Toggle preview
