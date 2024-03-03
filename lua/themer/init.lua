@@ -65,13 +65,13 @@ end
 
 -- Return filtered colorscheme
 function M.getFilteredColorList()
-        local colors = vim.fn.getcompletion('', 'color')
-        local index = isInList(vim.g.colors_name, colors)
-        if index ~= -1 then
-            table.remove(colors, index)
-            table.insert(colors, 1, vim.g.colors_name)
-        end
-        return subtract(colors, M.opts.filter_list)
+    local colors = vim.fn.getcompletion('', 'color')
+    local index = isInList(vim.g.colors_name, colors)
+    if index ~= -1 then
+        table.remove(colors, index)
+        table.insert(colors, 1, vim.g.colors_name)
+    end
+    return subtract(colors, M.opts.filter_list)
 end
 
 function M.setup(opts)
@@ -81,8 +81,6 @@ function M.setup(opts)
     -- If a theme is already set load it
     if vim.fn.filereadable(filename) ~= 0 then
         print('Themer: Found file' .. filename)
-    -- If no persisted theme is found then write either the initial_theme
-    -- if exists or the current theme
     else
         local theme = M.opts.initial_theme or vim.g.colors_name
         writeColorScheme(theme)
@@ -132,7 +130,7 @@ function M.select()
                         _preview_color()
                     end
                 )
-                 map("i", "<C-t>", function(_)
+                map("i", "<C-t>", function(_)
                     M.opts.preview = not M.opts.preview
                     vim.notify("Changed preview to " .. tostring(M.opts.preview), vim.log.levels.DEBUG)
                     _preview_color()
