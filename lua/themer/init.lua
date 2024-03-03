@@ -22,7 +22,7 @@ local function writeColorScheme(colorscheme)
         file:write("vim.fn.execute('colorscheme " .. colorscheme .. "')\n")
         file:write('end\n')
         file:write('return M\n')
-        file:close() -- Properly close the file using the file handle
+        file:close()
     else
         -- Handle the error situation, e.g., file couldn't be opened for writing
         print("Error: Unable to open file for writing.")
@@ -79,9 +79,7 @@ function M.setup(opts)
     M.opts = vim.tbl_extend('force', getDefaultOptions(), opts)
 
     -- If a theme is already set load it
-    if vim.fn.filereadable(filename) ~= 0 then
-        print('Themer: Found file' .. filename)
-    else
+    if vim.fn.filereadable(filename) == 0 then
         local theme = M.opts.initial_theme or vim.g.colors_name
         writeColorScheme(theme)
     end
@@ -136,8 +134,6 @@ function M.select()
                     _preview_color()
                 end)
 
-                -- Only set the rest of actions if preview is true.
-                -- These actions are only relevant if the preview is true
                 actions.move_selection_next:enhance({
                     post = function()
                         _preview_color()
