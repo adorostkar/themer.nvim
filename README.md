@@ -60,4 +60,4 @@ Lazy:
     This will not have any effect once the colorscheme is selected from telescope
 
 ## Key binding
-<C-t> Toggle preview
+`<C-t>` Toggle live preview
