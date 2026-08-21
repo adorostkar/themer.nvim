@@ -5,6 +5,10 @@ The colorscheme is shown in telescope and live preview is given when changing co
 
 The selected colorscheme is persisted and loaded with the plugin
 
+Telescope and unselected colorscheme plugins can remain lazy. Use `load_picker`
+to load Telescope immediately before the selector opens and list lazy
+colorschemes in `themes` so they appear in the picker.
+
 ## Command
 
 There is only one command
@@ -17,13 +21,13 @@ There is only one command
 
     {
         'adorostkar/themer.nvim',
-        opts = {},
+        opts = {
+            load_picker = function()
+                require('lazy').load({ plugins = { 'telescope.nvim' } })
+            end,
+        },
         priority = 1000,
         lazy = false,
-        dependencies = {
-            'nvim-telescope/telescope.nvim',
-            -- optional, add colorthemes here
-        }
     }
 
 ## Example
@@ -32,16 +36,20 @@ Lazy:
 
     {
         'adorostkar/themer.nvim',
-        opts = { initial_theme = 'tokyonight-night' },
+        opts = {
+            initial_theme = 'tokyonight-night',
+            themes = { 'tokyonight-night', 'onedark', 'catppuccin' },
+            load_picker = function()
+                require('lazy').load({ plugins = { 'telescope.nvim' } })
+            end,
+        },
         priority = 1000,
         lazy = false,
-        dependencies = {
-            'nvim-telescope/telescope.nvim',
-            "folke/tokyonight.nvim",
-            "navarasu/onedark.nvim",
-            "catppuccin/nvim",
-        }
-    }
+    },
+    { 'nvim-telescope/telescope.nvim', lazy = true },
+    { 'folke/tokyonight.nvim', lazy = true },
+    { 'navarasu/onedark.nvim', lazy = true },
+    { 'catppuccin/nvim', name = 'catppuccin', lazy = true },
 
 ## Options
 
@@ -49,6 +57,8 @@ Lazy:
         preview = false,
         filter_list = {},
         initial_theme = nil,
+        themes = {},
+        load_picker = nil,
         telescope = {
             -- options that goes into telescope
         }
@@ -58,6 +68,8 @@ Lazy:
 - **filter_list** is a list of colorschemes to not show in the finder
 - **initial_theme** should be the theme you want applied the first time the plugin is run.
     This will not have any effect once the colorscheme is selected from telescope
+- **themes** lists colorschemes that are installed but not yet on the runtime path.
+- **load_picker** is called before Telescope is required, allowing plugin managers to load it on demand.
 
 ## Key binding
 `<C-t>` Toggle live preview

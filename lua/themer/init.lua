@@ -9,12 +9,23 @@ local function getDefaultOptions()
         preview = false,
         filter_list = {},
         initial_theme = nil,
+        themes = {},
+        load_picker = nil,
         telescope = nil,
     }
 end
 
 local function writeColorScheme(colorscheme)
-    vim.fn.writefile({ colorscheme }, filename)
+    if not colorscheme or colorscheme == '' then
+        return false
+    end
+
+    vim.fn.mkdir(vim.fn.fnamemodify(filename, ':h'), 'p')
+    local ok, result = pcall(vim.fn.writefile, { colorscheme }, filename)
+    if not ok or result ~= 0 then
+        vim.notify("Themer: Failed to persist colorscheme: " .. tostring(result), vim.log.levels.WARN)
+    end
+    return ok and result == 0
 end
 
 -- Subtract list B from list A
@@ -32,13 +43,24 @@ local function subtract(A, B)
     return res
 end
 
+local function applyColorScheme(colorscheme)
+    if not colorscheme or colorscheme == '' then
+        return false
+    end
+
+    local ok, err = pcall(vim.cmd.colorscheme, colorscheme)
+    if not ok then
+        vim.notify("Themer: Failed to load colorscheme '" .. colorscheme .. "': " .. err, vim.log.levels.WARN)
+    end
+    return ok
+end
+
 local function loadColorScheme()
     if vim.fn.filereadable(filename) == 1 then
         local lines = vim.fn.readfile(filename)
-        if lines[1] and lines[1] ~= '' then
-            vim.cmd.colorscheme(lines[1])
-        end
+        return applyColorScheme(lines[1])
     end
+    return false
 end
 
 local function isInList(value, list)
@@ -55,22 +77,32 @@ function M.getFilteredColorList()
         _color_cache = vim.fn.getcompletion('', 'color')
     end
     local colors = vim.deepcopy(_color_cache)
-    local index = isInList(vim.g.colors_name, colors)
-    if index ~= -1 then
-        table.remove(colors, index)
-        table.insert(colors, 1, vim.g.colors_name)
+    for _, theme in ipairs(M.opts.themes) do
+        if isInList(theme, colors) == -1 then
+            table.insert(colors, theme)
+        end
+    end
+
+    if vim.g.colors_name then
+        local index = isInList(vim.g.colors_name, colors)
+        if index ~= -1 then
+            table.remove(colors, index)
+            table.insert(colors, 1, vim.g.colors_name)
+        end
     end
     return subtract(colors, M.opts.filter_list)
 end
 
 function M.setup(opts)
-    M.opts = vim.tbl_extend('force', getDefaultOptions(), opts)
+    M.opts = vim.tbl_deep_extend('force', getDefaultOptions(), opts or {})
 
     if vim.fn.filereadable(filename) == 0 then
         local theme = M.opts.initial_theme or vim.g.colors_name
         writeColorScheme(theme)
     end
-    loadColorScheme()
+    if not loadColorScheme() and applyColorScheme(M.opts.initial_theme) then
+        writeColorScheme(M.opts.initial_theme)
+    end
 
     M.opts.filter_list = M.opts.filter_list or {}
     local ccsIndex = isInList(vim.g.colors_name, M.opts.filter_list)
@@ -84,10 +116,16 @@ local function _preview_color()
     if not M.opts.preview then return end
     local action_state = require("telescope.actions.state")
     local selection = action_state.get_selected_entry()
-    vim.cmd.colorscheme(selection.value)
+    if selection then
+        applyColorScheme(selection.value)
+    end
 end
 
 function M.select()
+    if M.opts.load_picker then
+        M.opts.load_picker()
+    end
+
     local show_telescope = function(opts)
         local pickers = require("telescope.pickers")
         local finders = require("telescope.finders")
@@ -106,8 +144,9 @@ function M.select()
                     function()
                         actions.close(prompt_bufnr)
                         local selection = action_state.get_selected_entry()
-                        writeColorScheme(selection.value)
-                        vim.cmd.colorscheme(selection.value)
+                        if selection and applyColorScheme(selection.value) then
+                            writeColorScheme(selection.value)
+                        end
                     end
                 )
                 map("i", "<C-t>", function(_)
