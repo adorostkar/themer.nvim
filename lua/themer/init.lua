@@ -21,11 +21,11 @@ local function writeColorScheme(colorscheme)
     end
 
     vim.fn.mkdir(vim.fn.fnamemodify(filename, ':h'), 'p')
-    local ok, err = pcall(vim.fn.writefile, { colorscheme }, filename)
-    if not ok then
-        vim.notify("Themer: Failed to persist colorscheme: " .. err, vim.log.levels.WARN)
+    local ok, result = pcall(vim.fn.writefile, { colorscheme }, filename)
+    if not ok or result ~= 0 then
+        vim.notify("Themer: Failed to persist colorscheme: " .. tostring(result), vim.log.levels.WARN)
     end
-    return ok
+    return ok and result == 0
 end
 
 -- Subtract list B from list A
